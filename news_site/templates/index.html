@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Global News Aggregator</title>
+</head>
+
+<body>
+
+<h1>Global News Aggregator</h1>
+
+<a href="/headlines">
+<button>View Top Headline From Each Source</button>
+</a>
+
+<h2>News Sources</h2>
+
+<ul>
+{% for id, source in sources.items() %}
+
+<li>
+<a href="/source/{{ id }}">{{ source.name }}</a>
+</li>
+
+{% endfor %}
+</ul>
+
+</body>
+</html>
