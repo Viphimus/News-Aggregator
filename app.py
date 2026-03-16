@@ -1,9 +1,11 @@
 from flask import Flask, render_template
 import requests
 import feedparser
+import time
 
 app = Flask(__name__)
 
+# --- News sources ---
 news_sources = {
     1: {"name": "Al Jazeera", "categories": {1: ("World / Global South", "https://www.aljazeera.com/xml/rss/all.xml")}},
     2: {"name": "The New York Times", "categories": {1: ("Western / US Perspective", "https://rss.nytimes.com/services/xml/rss/nyt/World.xml")}},
@@ -14,16 +16,32 @@ news_sources = {
     7: {"name": "Grist", "categories": {1: ("Environment / Climate", "https://grist.org/feed/")}},
 }
 
+# --- Feed cache ---
+feed_cache = {}
+CACHE_DURATION = 900  # 15 minutes
+
 def get_feed(url):
+    """Fetch RSS feed with timeout and caching."""
+    now = time.time()
+
+    # Check cache
+    if url in feed_cache and now - feed_cache[url]['time'] < CACHE_DURATION:
+        return feed_cache[url]['feed']
+
     try:
         headers = {"User-Agent": "Mozilla/5.0"}
-        response = requests.get(url, headers=headers, timeout=10)
+        response = requests.get(url, headers=headers, timeout=5)  # 5 second timeout
         response.raise_for_status()
-        return feedparser.parse(response.content)
+        feed = feedparser.parse(response.content)
     except Exception as e:
-        print(f"Error fetching feed: {e}")
-        return feedparser.parse("")  # empty feed
+        print(f"Warning: Could not fetch {url}: {e}")
+        feed = feedparser.parse("")  # empty feed
 
+    # Save to cache
+    feed_cache[url] = {'feed': feed, 'time': now}
+    return feed
+
+# --- Routes ---
 @app.route("/")
 def home():
     return render_template("index.html", sources=news_sources)
@@ -36,6 +54,7 @@ def show_articles(source_id):
 
     category_name, url = list(source["categories"].values())[0]
     feed = get_feed(url)
+
     articles = [{"title": e.title, "link": e.link} for e in feed.entries[:5]] if feed.entries else []
     return render_template("articles.html", source_name=source["name"], category_name=category_name, articles=articles)
 
@@ -53,6 +72,9 @@ def top_headlines():
                     "title": entry.title,
                     "link": entry.link
                 })
+            else:
+                # Skip feeds with no entries
+                continue
     return render_template("headlines.html", headlines=headlines)
 
 if __name__ == "__main__":
