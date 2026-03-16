@@ -1,34 +1,25 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Top Headlines</title>
+    <meta charset="UTF-8">
+    <title>Top Headlines</title>
 </head>
-
 <body>
+    <h1>Top Headlines from All Sources</h1>
 
-<h1>Top Headline From Each Source</h1>
+    {% if headlines %}
+        <ul>
+            {% for item in headlines %}
+                <li>
+                    <strong>{{ item.source }}</strong> - {{ item.category }}:
+                    <a href="{{ item.link }}" target="_blank">{{ item.title }}</a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No headlines available.</p>
+    {% endif %}
 
-<ul>
-
-{% for article in headlines %}
-
-<li>
-
-<b>{{ article.source }}</b> - {{ article.category }}<br>
-
-<a href="{{ article.link }}" target="_blank">
-{{ article.title }}
-</a>
-
-</li>
-
-<br>
-
-{% endfor %}
-
-</ul>
-
-<a href="/">Back</a>
-
+    <a href="{{ url_for('home') }}">Back to sources</a>
 </body>
 </html>

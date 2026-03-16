@@ -1,28 +1,21 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Global News Aggregator</title>
+    <meta charset="UTF-8">
+    <title>News Aggregator</title>
 </head>
-
 <body>
-
-<h1>Global News Aggregator</h1>
-
-<a href="/headlines">
-<button>View Top Headline From Each Source</button>
-</a>
-
-<h2>News Sources</h2>
-
-<ul>
-{% for id, source in sources.items() %}
-
-<li>
-<a href="/source/{{ id }}">{{ source.name }}</a>
-</li>
-
-{% endfor %}
-</ul>
-
+    <h1>Global News Aggregator</h1>
+    <h2>News Sources</h2>
+    <ul>
+        {% for id, source in sources.items() %}
+            <li>
+                <a href="{{ url_for('show_articles', source_id=id) }}">
+                    {{ source.name }}
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+    <a href="{{ url_for('top_headlines') }}">Top headline from each source</a>
 </body>
 </html>
